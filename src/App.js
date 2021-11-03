@@ -1,6 +1,5 @@
 import fetch from 'node-fetch';
 import React, {useState, useEffect} from 'react';
-import styled from 'styled-components';
 import './App.scss';
 import Species from './Species';
 
@@ -17,11 +16,6 @@ const SPECIES_IMAGES = {
   yoda: 'https://static.wikia.nocookie.net/starwars/images/d/d6/Yoda_SWSB.png',
 };
 const CM_TO_IN_CONVERSION_RATIO = 2.54;
-
-const SpecieCardList = styled.div`
-  display: flex;
-  align-items: stretch;
-`;
 
 const SpeciesCard = ({ url }) => {
   const [specieData, setSpecieData] = useState({});
@@ -87,11 +81,11 @@ function App() {
     return (
       <div className="App">
         <h1>Empire Strikes Back - Species Listing</h1>
-        <SpecieCardList className="App-species">
+        <div className="App-species">
           {speciesData.map((url, i) => {
             return <SpeciesCard url={url} key={i}/>
           })}
-        </SpecieCardList>
+        </div>
       </div>
     );
 }
