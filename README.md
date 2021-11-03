@@ -11,3 +11,9 @@ Examine the pre-existing file structure and, given what's available, call the St
 - Due to an unfortunate issue with the API and CodeSandbox, you will have to alter the corresponding species URLs to be `https` rather than the default `http` or else they will not load correctly.
 - Add the `Species` components inside of the `App-species` element.
 - Keep a close eye on the PropTypes of `Species` and ensure there are no errors in the console.
+
+## To Run SPECIES-OF-THE-EMPIRE
+
+- Run `npm install`
+- Run `npm run start`
+- View `localhost:3000` on your browser
