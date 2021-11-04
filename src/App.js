@@ -17,8 +17,7 @@ const SPECIES_IMAGES = {
 };
 const CM_TO_IN_CONVERSION_RATIO = 2.54;
 
-const SpeciesCard = ({ url }) => {
-  const [specieData, setSpecieData] = useState({});
+const transformData = data => {
   const {
     name,
     classification,
@@ -26,7 +25,7 @@ const SpeciesCard = ({ url }) => {
     average_height,
     language,
     films
-  } = specieData;
+  } = data;
   const numFilms = films ? films.length : 0;
   const heightInInches = Math.round(average_height / CM_TO_IN_CONVERSION_RATIO);
   const inchesString = `${heightInInches}\"`
@@ -34,42 +33,74 @@ const SpeciesCard = ({ url }) => {
   const imgString = Object.keys(SPECIES_IMAGES).filter(x => {
     return name ? name.toLowerCase().includes(x) : true;
   })[0];
-
-  const fetchSpecieData = async () => {
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      setSpecieData(data);
-    } catch (e) {
-      console.log(e)
-    }
+  return {
+    name,
+    classification,
+    designation,
+    height: actualHeight,
+    image: SPECIES_IMAGES[imgString],
+    numFilms,
+    language
   }
-
-  useEffect(() => {
-    fetchSpecieData()
-  }, [url]);
-
-  return (
-    <Species 
-      name={name || '...'}
-      classification={classification || '...'}
-      designation={designation || '...'}
-      height={actualHeight || '...'}
-      image={SPECIES_IMAGES[imgString]}
-      numFilms={numFilms}
-      language={language || '...'}
-    />
-  )
 }
+
+const specie = function(data) {
+  const {
+    name,
+    classification,
+    designation,
+    height,
+    image,
+    numFilms,
+    language,
+  } = transformData(data)
+  this.name = name;
+  this.classification = classification;
+  this.designation = designation;
+  this.height = height;
+  this.image = image;
+  this.numFilms = numFilms;
+  this.language = language;
+};
+
+specie.prototype.getFormattedData = function () {
+  return {
+    name: this.name,
+    classification: this.classification,
+    designation: this.designation,
+    height: this.height,
+    image: this.image,
+    numFilms: this.numFilms,
+    language: this.language,
+  };
+};
 
 function App() {
   const [speciesData, setSpeciesData] = useState([])
+
+  const fetchIndvSpeciesData = (urls) => {
+    const accumulated = [];
+    const urlsLenght = urls.length;
+    urls.forEach(async url => {
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        console.log({url, data})
+        accumulated.push(new specie(data))
+        if (accumulated.length === urlsLenght) {
+          setSpeciesData(accumulated);
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    });
+  }
 
   const fetchData = async () => {
     try {
       const response = await fetch(API_URL);
       const data = await response.json();
-      setSpeciesData(data.species);
+      fetchIndvSpeciesData(data.species)
     } catch (e) {
       console.log(e)
     }
@@ -78,16 +109,35 @@ function App() {
   useEffect(() => {
     fetchData()
   }, []);
-    return (
-      <div className="App">
-        <h1>Empire Strikes Back - Species Listing</h1>
-        <div className="App-species">
-          {speciesData.map((url, i) => {
-            return <SpeciesCard url={url} key={i}/>
-          })}
-        </div>
+
+  return (
+    <div className="App">
+      <h1>Empire Strikes Back - Species Listing</h1>
+      <div className="App-species">
+        {speciesData.map(indvSpecie => {
+          const {
+            name,
+            classification,
+            designation,
+            height,
+            image,
+            numFilms,
+            language,
+          } = indvSpecie.getFormattedData();
+          return <Species 
+            key={name}
+            name={name || '...'}
+            classification={classification || '...'}
+            designation={designation || '...'}
+            height={height || '...'}
+            image={image}
+            numFilms={numFilms}
+            language={language || '...'}
+          />
+        })}
       </div>
-    );
+    </div>
+  );
 }
 
 export default App;
