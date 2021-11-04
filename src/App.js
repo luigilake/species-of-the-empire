@@ -17,8 +17,19 @@ const SPECIES_IMAGES = {
 };
 const CM_TO_IN_CONVERSION_RATIO = 2.54;
 
-const SpeciesCard = ({ url }) => {
-  const [specieData, setSpecieData] = useState({});
+// ------------------------------------------
+// HELPERS
+// ------------------------------------------
+
+const fetchData = (url) => new Promise(resolve => {
+  fetch(url)
+    .then(response => response.json())
+    .then(response => {
+      resolve(response)
+    })
+});
+
+const dataFormatter = data => {
   const {
     name,
     classification,
@@ -26,7 +37,7 @@ const SpeciesCard = ({ url }) => {
     average_height,
     language,
     films
-  } = specieData;
+  } = data;
   const numFilms = films ? films.length : 0;
   const heightInInches = Math.round(average_height / CM_TO_IN_CONVERSION_RATIO);
   const inchesString = `${heightInInches}\"`
@@ -34,19 +45,38 @@ const SpeciesCard = ({ url }) => {
   const imgString = Object.keys(SPECIES_IMAGES).filter(x => {
     return name ? name.toLowerCase().includes(x) : true;
   })[0];
-
-  const fetchSpecieData = async () => {
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      setSpecieData(data);
-    } catch (e) {
-      console.log(e)
-    }
+  return {
+    name,
+    classification,
+    designation,
+    height: actualHeight,
+    image: SPECIES_IMAGES[imgString],
+    numFilms,
+    language,
   }
+}
+
+// ------------------------------------------
+// COMPONENTS
+// ------------------------------------------
+
+const SpeciesCard = ({ url }) => {
+  const [specieData, setSpecieData] = useState({});
+  const {
+    name,
+    classification,
+    designation,
+    height,
+    image,
+    numFilms,
+    language,
+  } = dataFormatter(specieData);
 
   useEffect(() => {
-    fetchSpecieData()
+    fetchData(url)
+      .then(response => {
+        setSpecieData(response)
+      })
   }, [url]);
 
   return (
@@ -54,8 +84,8 @@ const SpeciesCard = ({ url }) => {
       name={name || '...'}
       classification={classification || '...'}
       designation={designation || '...'}
-      height={actualHeight || '...'}
-      image={SPECIES_IMAGES[imgString]}
+      height={height || '...'}
+      image={image}
       numFilms={numFilms}
       language={language || '...'}
     />
@@ -65,29 +95,23 @@ const SpeciesCard = ({ url }) => {
 function App() {
   const [speciesData, setSpeciesData] = useState([])
 
-  const fetchData = async () => {
-    try {
-      const response = await fetch(API_URL);
-      const data = await response.json();
-      setSpeciesData(data.species);
-    } catch (e) {
-      console.log(e)
-    }
-  }
-
   useEffect(() => {
-    fetchData()
+    fetchData(API_URL)
+      .then(response => {
+        setSpeciesData(response.species)
+      });
   }, []);
-    return (
-      <div className="App">
-        <h1>Empire Strikes Back - Species Listing</h1>
-        <div className="App-species">
-          {speciesData.map((url, i) => {
-            return <SpeciesCard url={url} key={i}/>
-          })}
-        </div>
+    
+  return (
+    <div className="App">
+      <h1>Empire Strikes Back - Species Listing</h1>
+      <div className="App-species">
+        {speciesData.map((url, i) => {
+          return <SpeciesCard url={url} key={i}/>
+        })}
       </div>
-    );
+    </div>
+  );
 }
 
 export default App;
