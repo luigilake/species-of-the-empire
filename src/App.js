@@ -60,45 +60,16 @@ const dataFormatter = data => {
 // COMPONENTS
 // ------------------------------------------
 
-const SpeciesCard = ({ url }) => {
-  const [specieData, setSpecieData] = useState({});
-  const {
-    name,
-    classification,
-    designation,
-    height,
-    image,
-    numFilms,
-    language,
-  } = dataFormatter(specieData);
-
-  useEffect(() => {
-    fetchData(url)
-      .then(response => {
-        setSpecieData(response)
-      })
-  }, [url]);
-
-  return (
-    <Species 
-      name={name || '...'}
-      classification={classification || '...'}
-      designation={designation || '...'}
-      height={height || '...'}
-      image={image}
-      numFilms={numFilms}
-      language={language || '...'}
-    />
-  )
-}
-
 function App() {
   const [speciesData, setSpeciesData] = useState([])
 
   useEffect(() => {
     fetchData(API_URL)
       .then(response => {
-        setSpeciesData(response.species)
+        Promise.all(response.species.map(specie => fetchData(specie)))
+          .then(responseArray => {
+            setSpeciesData(responseArray)
+          })
       });
   }, []);
     
@@ -106,8 +77,29 @@ function App() {
     <div className="App">
       <h1>Empire Strikes Back - Species Listing</h1>
       <div className="App-species">
-        {speciesData.map((url, i) => {
-          return <SpeciesCard url={url} key={i}/>
+        {speciesData.map((specieData, i) => {
+          const {
+            name,
+            classification,
+            designation,
+            height,
+            image,
+            numFilms,
+            language,
+          } = dataFormatter(specieData);
+
+          return (
+            <Species
+              key={name}
+              name={name || '...'}
+              classification={classification || '...'}
+              designation={designation || '...'}
+              height={height || '...'}
+              image={image}
+              numFilms={numFilms}
+              language={language || '...'}
+            />
+          )
         })}
       </div>
     </div>
