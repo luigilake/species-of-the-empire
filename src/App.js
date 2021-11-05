@@ -91,13 +91,13 @@ function App() {
           return (
             <Species
               key={name}
-              name={name || '...'}
-              classification={classification || '...'}
-              designation={designation || '...'}
-              height={height || '...'}
+              name={name}
+              classification={classification}
+              designation={designation}
+              height={height}
               image={image}
               numFilms={numFilms}
-              language={language || '...'}
+              language={language}
             />
           )
         })}
